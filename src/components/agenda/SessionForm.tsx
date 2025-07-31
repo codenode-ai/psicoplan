@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +34,7 @@ interface SessionFormProps {
 export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const debounceRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -128,11 +130,12 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Select 
             value={form.watch('paciente_id')} 
             onValueChange={(value) => {
-              // Debounce the setValue to prevent multiple rapid updates
-              const timeoutId = setTimeout(() => {
+              if (debounceRef.current.paciente) {
+                clearTimeout(debounceRef.current.paciente);
+              }
+              debounceRef.current.paciente = setTimeout(() => {
                 form.setValue('paciente_id', value);
-              }, 50);
-              return () => clearTimeout(timeoutId);
+              }, 100);
             }}
           >
             <SelectTrigger className="touch-manipulation">
@@ -172,11 +175,12 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Select 
             value={form.watch('tipo')} 
             onValueChange={(value) => {
-              // Debounce the setValue to prevent multiple rapid updates
-              const timeoutId = setTimeout(() => {
+              if (debounceRef.current.tipo) {
+                clearTimeout(debounceRef.current.tipo);
+              }
+              debounceRef.current.tipo = setTimeout(() => {
                 form.setValue('tipo', value as 'presencial' | 'online');
               }, 100);
-              return () => clearTimeout(timeoutId);
             }}
           >
             <SelectTrigger className="touch-manipulation">
@@ -194,11 +198,12 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Select 
             value={form.watch('status')} 
             onValueChange={(value) => {
-              // Debounce the setValue to prevent multiple rapid updates
-              const timeoutId = setTimeout(() => {
+              if (debounceRef.current.status) {
+                clearTimeout(debounceRef.current.status);
+              }
+              debounceRef.current.status = setTimeout(() => {
                 form.setValue('status', value as 'agendada' | 'realizada' | 'cancelada');
               }, 100);
-              return () => clearTimeout(timeoutId);
             }}
           >
             <SelectTrigger className="touch-manipulation">

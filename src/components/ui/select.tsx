@@ -70,42 +70,24 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
     container?: HTMLElement | null;
   }
->(({ className, children, position = "popper", container, ...props }, ref) => {
-  // Detect mobile devices and if inside a dialog
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const isInDialog = typeof window !== 'undefined' && document.querySelector('[data-radix-dialog-content]');
-  
-  // Force popper positioning on mobile inside dialogs to prevent z-index conflicts
-  const forcedPosition = (isMobile && isInDialog) ? "popper" : position;
-  
-  // Use container prop to avoid portal conflicts inside dialogs on mobile
-  const shouldUsePortal = !(isMobile && isInDialog);
-
-  const content = (
+>(({ className, children, position = "popper", container, ...props }, ref) => (
+  <SelectPrimitive.Portal container={container}>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-[70] max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg touch-manipulation",
-        // Reduced animations for mobile performance
-        isMobile 
-          ? "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" 
-          : "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        forcedPosition === "popper" &&
+        "relative z-60 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-        // Mobile-specific improvements
-        isMobile && "shadow-xl border-2 max-w-[90vw]",
-        // Dialog-specific improvements for mobile
-        (isMobile && isInDialog) && "max-h-[50vh] overflow-y-auto",
         className
       )}
-      position={forcedPosition}
+      position={position}
       {...props}
     >
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
           "p-1",
-          forcedPosition === "popper" &&
+          position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
       >
@@ -113,18 +95,8 @@ const SelectContent = React.forwardRef<
       </SelectPrimitive.Viewport>
       <SelectScrollDownButton />
     </SelectPrimitive.Content>
-  );
-
-  if (shouldUsePortal) {
-    return (
-      <SelectPrimitive.Portal container={container}>
-        {content}
-      </SelectPrimitive.Portal>
-    );
-  }
-
-  return content;
-})
+  </SelectPrimitive.Portal>
+))
 SelectContent.displayName = SelectPrimitive.Content.displayName
 
 const SelectLabel = React.forwardRef<

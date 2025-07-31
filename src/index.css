@@ -219,51 +219,23 @@
       z-index: 100 !important;
     }
     
-    [data-radix-dialog-overlay] {
-      z-index: 40 !important;
+    /* Reduce animation performance impact */
+    * {
+      animation-duration: 0.2s !important;
+      transition-duration: 0.2s !important;
     }
-    
-    [data-radix-dialog-content] {
-      z-index: 45 !important;
-    }
-    
-    [data-radix-select-content] {
-      z-index: 50 !important;
-    }
-    
-    /* Prevent dialog content from interfering with select on mobile */
-    @media (max-width: 768px) {
-      [data-radix-dialog-content] {
-        transform: none !important;
-        position: fixed !important;
-        inset: 1rem !important;
-        left: 1rem !important;
-        right: 1rem !important;
-        top: 1rem !important;
-        bottom: auto !important;
-        max-height: 90vh !important;
-        overflow-y: auto !important;
-      }
-    }
+  }
 
-    /* Faster animations for mobile */
-    .animate-in,
-    .animate-out {
-      animation-duration: 0.15s;
-    }
-    
-    @media (prefers-reduced-motion: reduce) {
-      .animate-in,
-      .animate-out {
-        animation: none;
-      }
-    }
-
-    /* Reduce animations on mobile for better performance */
-    @media (prefers-reduced-motion: no-preference) {
-      * {
-        animation-duration: 0.2s !important;
-      }
-    }
+  /* ===== Z-Index Hierarchy ===== */
+  [data-radix-dialog-overlay] {
+    z-index: 40 !important;
+  }
+  
+  [data-radix-dialog-content] {
+    z-index: 50 !important;
+  }
+  
+  [data-radix-select-content] {
+    z-index: 60 !important;
   }
 }
