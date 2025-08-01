@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SmartSelect, SmartSelectItem } from '@/components/ui/smart-select';
 import { supabase } from '@/integrations/supabase/client';
 import { SessionWithPatient, Patient } from '@/types/database.types';
 import { toast } from '@/hooks/use-toast';
@@ -127,7 +127,7 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
           <Label htmlFor="paciente_id">Paciente *</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('paciente_id')} 
             onValueChange={(value) => {
               if (debounceRef.current.paciente) {
@@ -137,18 +137,14 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
                 form.setValue('paciente_id', value);
               }, 100);
             }}
+            placeholder="Selecione um paciente"
           >
-            <SelectTrigger className="touch-manipulation">
-              <SelectValue placeholder="Selecione um paciente" />
-            </SelectTrigger>
-            <SelectContent>
-              {patients.map((patient) => (
-                <SelectItem key={patient.id} value={patient.id}>
-                  {patient.nome_completo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {patients.map((patient) => (
+              <SmartSelectItem key={patient.id} value={patient.id}>
+                {patient.nome_completo}
+              </SmartSelectItem>
+            ))}
+          </SmartSelect>
           {form.formState.errors.paciente_id && (
             <p className="text-sm text-destructive mt-1">
               {form.formState.errors.paciente_id.message}
@@ -172,7 +168,7 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
 
         <div>
           <Label htmlFor="tipo">Tipo *</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('tipo')} 
             onValueChange={(value) => {
               if (debounceRef.current.tipo) {
@@ -183,19 +179,14 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
               }, 100);
             }}
           >
-            <SelectTrigger className="touch-manipulation">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="presencial">Presencial</SelectItem>
-              <SelectItem value="online">Online</SelectItem>
-            </SelectContent>
-          </Select>
+            <SmartSelectItem value="presencial">Presencial</SmartSelectItem>
+            <SmartSelectItem value="online">Online</SmartSelectItem>
+          </SmartSelect>
         </div>
 
         <div>
           <Label htmlFor="status">Status</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('status')} 
             onValueChange={(value) => {
               if (debounceRef.current.status) {
@@ -206,15 +197,10 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
               }, 100);
             }}
           >
-            <SelectTrigger className="touch-manipulation">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="agendada">Agendada</SelectItem>
-              <SelectItem value="realizada">Realizada</SelectItem>
-              <SelectItem value="cancelada">Cancelada</SelectItem>
-            </SelectContent>
-          </Select>
+            <SmartSelectItem value="agendada">Agendada</SmartSelectItem>
+            <SmartSelectItem value="realizada">Realizada</SmartSelectItem>
+            <SmartSelectItem value="cancelada">Cancelada</SmartSelectItem>
+          </SmartSelect>
         </div>
 
         {selectedTipo === 'online' && (
