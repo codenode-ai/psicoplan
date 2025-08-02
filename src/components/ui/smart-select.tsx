@@ -17,36 +17,56 @@ interface SmartSelectItemProps {
   children: React.ReactNode;
 }
 
-// Hook para detectar se está em mobile dentro de um dialog
+// Hook melhorado para detectar mobile em dialog
 function useIsMobileInDialog() {
-  const [isMobile, setIsMobile] = React.useState(false);
-  const [isInDialog, setIsInDialog] = React.useState(false);
+  const [shouldUseNative, setShouldUseNative] = React.useState(false);
 
   React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkMobileInDialog = () => {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                      (window.innerWidth <= 768 && 'ontouchstart' in window);
+      const isInDialog = !!document.querySelector('[data-radix-dialog-content]');
+      setShouldUseNative(isMobile && isInDialog);
     };
 
-    const checkDialog = () => {
-      setIsInDialog(!!document.querySelector('[data-radix-dialog-content]'));
-    };
+    // Check imediatamente
+    checkMobileInDialog();
 
-    checkMobile();
-    checkDialog();
+    // Observer otimizado apenas para mudanças do dialog
+    const observer = new MutationObserver((mutations) => {
+      const hasDialogChange = mutations.some(mutation => 
+        Array.from(mutation.addedNodes).some(node => 
+          node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
+        ) ||
+        Array.from(mutation.removedNodes).some(node => 
+          node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
+        )
+      );
+      
+      if (hasDialogChange) {
+        checkMobileInDialog();
+      }
+    });
 
-    window.addEventListener('resize', checkMobile);
-    
-    // Observer para detectar quando dialog é aberto
-    const observer = new MutationObserver(checkDialog);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
+
+    // Listener para mudanças de orientação
+    window.addEventListener('orientationchange', checkMobileInDialog);
+    window.addEventListener('resize', checkMobileInDialog);
 
     return () => {
-      window.removeEventListener('resize', checkMobile);
       observer.disconnect();
+      window.removeEventListener('orientationchange', checkMobileInDialog);
+      window.removeEventListener('resize', checkMobileInDialog);
     };
   }, []);
 
-  return isMobile && isInDialog;
+  return shouldUseNative;
 }
 
 export function SmartSelect({ 
@@ -75,19 +95,26 @@ export function SmartSelect({
     return (
       <select
         value={value || ''}
-        onChange={(e) => onValueChange(e.target.value)}
+        onChange={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onValueChange(e.target.value);
+        }}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         disabled={disabled}
+        style={{ touchAction: 'manipulation' }}
         className={cn(
           "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",
           "placeholder:text-muted-foreground",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          "touch-manipulation", // Melhora interação no mobile
+          "touch-manipulation min-h-[44px]", // Área de toque mínima de 44px
           className
         )}
       >
-        {placeholder && <option value="">{placeholder}</option>}
+        {placeholder && <option value="" disabled>{placeholder}</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -100,10 +127,16 @@ export function SmartSelect({
   // Desktop: usar Radix Select normal
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-      <SelectTrigger className={cn("touch-manipulation", className)}>
+      <SelectTrigger className={cn("touch-manipulation min-h-[44px]", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent position="popper" side="bottom" align="start">
+      <SelectContent 
+        position="popper" 
+        side="bottom" 
+        align="start"
+        className="z-[9999]"
+        container={document.querySelector('[data-radix-dialog-content]') || undefined}
+      >
         {children}
       </SelectContent>
     </Select>

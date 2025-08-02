@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRef } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +34,7 @@ interface SessionFormProps {
 export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const debounceRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -129,14 +129,7 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Label htmlFor="paciente_id">Paciente *</Label>
           <SmartSelect 
             value={form.watch('paciente_id')} 
-            onValueChange={(value) => {
-              if (debounceRef.current.paciente) {
-                clearTimeout(debounceRef.current.paciente);
-              }
-              debounceRef.current.paciente = setTimeout(() => {
-                form.setValue('paciente_id', value);
-              }, 100);
-            }}
+            onValueChange={(value) => form.setValue('paciente_id', value)}
             placeholder="Selecione um paciente"
           >
             {patients.map((patient) => (
@@ -170,14 +163,7 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Label htmlFor="tipo">Tipo *</Label>
           <SmartSelect 
             value={form.watch('tipo')} 
-            onValueChange={(value) => {
-              if (debounceRef.current.tipo) {
-                clearTimeout(debounceRef.current.tipo);
-              }
-              debounceRef.current.tipo = setTimeout(() => {
-                form.setValue('tipo', value as 'presencial' | 'online');
-              }, 100);
-            }}
+            onValueChange={(value) => form.setValue('tipo', value as 'presencial' | 'online')}
           >
             <SmartSelectItem value="presencial">Presencial</SmartSelectItem>
             <SmartSelectItem value="online">Online</SmartSelectItem>
@@ -188,14 +174,7 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
           <Label htmlFor="status">Status</Label>
           <SmartSelect 
             value={form.watch('status')} 
-            onValueChange={(value) => {
-              if (debounceRef.current.status) {
-                clearTimeout(debounceRef.current.status);
-              }
-              debounceRef.current.status = setTimeout(() => {
-                form.setValue('status', value as 'agendada' | 'realizada' | 'cancelada');
-              }, 100);
-            }}
+            onValueChange={(value) => form.setValue('status', value as 'agendada' | 'realizada' | 'cancelada')}
           >
             <SmartSelectItem value="agendada">Agendada</SmartSelectItem>
             <SmartSelectItem value="realizada">Realizada</SmartSelectItem>
