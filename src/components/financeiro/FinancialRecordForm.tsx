@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SmartSelect, SmartSelectItem } from '@/components/ui/smart-select';
 import { supabase } from '@/integrations/supabase/client';
 import { FinancialRecord, Patient, SessionWithPatient } from '@/types/database.types';
 import { toast } from '@/hooks/use-toast';
@@ -147,24 +147,20 @@ export function FinancialRecordForm({ record, onSuccess }: FinancialRecordFormPr
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="paciente_id">Paciente *</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('paciente_id')} 
             onValueChange={(value) => {
               form.setValue('paciente_id', value);
               form.setValue('sessao_id', 'none');
             }}
+            placeholder="Selecione um paciente"
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um paciente" />
-            </SelectTrigger>
-            <SelectContent>
-              {patients.map((patient) => (
-                <SelectItem key={patient.id} value={patient.id}>
-                  {patient.nome_completo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {patients.map((patient) => (
+              <SmartSelectItem key={patient.id} value={patient.id}>
+                {patient.nome_completo}
+              </SmartSelectItem>
+            ))}
+          </SmartSelect>
           {form.formState.errors.paciente_id && (
             <p className="text-sm text-destructive mt-1">
               {form.formState.errors.paciente_id.message}
@@ -174,22 +170,18 @@ export function FinancialRecordForm({ record, onSuccess }: FinancialRecordFormPr
 
         <div>
           <Label htmlFor="sessao_id">Sessão (opcional)</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('sessao_id')} 
             onValueChange={(value) => form.setValue('sessao_id', value)}
+            placeholder="Selecione uma sessão ou deixe em branco"
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma sessão ou deixe em branco" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhuma sessão</SelectItem>
-              {filteredSessions.map((session) => (
-                <SelectItem key={session.id} value={session.id}>
-                  {new Date(session.data_hora).toLocaleDateString('pt-BR')} - {session.tipo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <SmartSelectItem value="none">Nenhuma sessão</SmartSelectItem>
+            {filteredSessions.map((session) => (
+              <SmartSelectItem key={session.id} value={session.id}>
+                {new Date(session.data_hora).toLocaleDateString('pt-BR')} - {session.tipo}
+              </SmartSelectItem>
+            ))}
+          </SmartSelect>
         </div>
 
         <div>
@@ -225,21 +217,17 @@ export function FinancialRecordForm({ record, onSuccess }: FinancialRecordFormPr
 
         <div className="col-span-2">
           <Label htmlFor="forma_pagamento">Forma de Pagamento *</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('forma_pagamento')} 
             onValueChange={(value) => form.setValue('forma_pagamento', value as any)}
+            placeholder="Selecione a forma de pagamento"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(paymentMethods).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {Object.entries(paymentMethods).map(([key, label]) => (
+              <SmartSelectItem key={key} value={key}>
+                {label}
+              </SmartSelectItem>
+            ))}
+          </SmartSelect>
         </div>
       </div>
 

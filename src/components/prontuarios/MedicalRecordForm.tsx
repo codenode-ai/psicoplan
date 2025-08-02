@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SmartSelect, SmartSelectItem } from '@/components/ui/smart-select';
 import { supabase } from '@/integrations/supabase/client';
 import { MedicalRecord, SessionWithPatient } from '@/types/database.types';
 import { toast } from '@/hooks/use-toast';
@@ -108,26 +108,22 @@ export function MedicalRecordForm({ record, onSuccess }: MedicalRecordFormProps)
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="sessao_id">Sessão *</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('sessao_id')} 
             onValueChange={(value) => form.setValue('sessao_id', value)}
+            placeholder="Selecione uma sessão"
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma sessão" />
-            </SelectTrigger>
-            <SelectContent>
-              {sessions.map((session) => (
-                <SelectItem key={session.id} value={session.id}>
-                  {session.paciente?.nome_completo} - {' '}
-                  {new Date(session.data_hora).toLocaleDateString('pt-BR')} {' '}
-                  {new Date(session.data_hora).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {sessions.map((session) => (
+              <SmartSelectItem key={session.id} value={session.id}>
+                {session.paciente?.nome_completo} - {' '}
+                {new Date(session.data_hora).toLocaleDateString('pt-BR')} {' '}
+                {new Date(session.data_hora).toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </SmartSelectItem>
+            ))}
+          </SmartSelect>
           {form.formState.errors.sessao_id && (
             <p className="text-sm text-destructive mt-1">
               {form.formState.errors.sessao_id.message}

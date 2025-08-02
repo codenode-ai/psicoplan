@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SmartSelect, SmartSelectItem } from '@/components/ui/smart-select';
 import { UserProfile } from '@/types/database.types';
 
 const userEditSchema = z.object({
@@ -74,37 +74,29 @@ export function UserEditForm({ user, onSave, canEditRole }: UserEditFormProps) {
 
       <div>
         <Label htmlFor="plano">Plano</Label>
-        <Select 
+        <SmartSelect 
           value={form.watch('plano')} 
           onValueChange={(value) => form.setValue('plano', value as 'free' | 'plus' | 'pro')}
+          placeholder="Selecione o plano"
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="free">Free</SelectItem>
-            <SelectItem value="plus">Plus</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-          </SelectContent>
-        </Select>
+          <SmartSelectItem value="free">Free</SmartSelectItem>
+          <SmartSelectItem value="plus">Plus</SmartSelectItem>
+          <SmartSelectItem value="pro">Pro</SmartSelectItem>
+        </SmartSelect>
       </div>
 
       {canEditRole && (
         <div>
           <Label htmlFor="role">Papel</Label>
-          <Select 
+          <SmartSelect 
             value={form.watch('role')} 
             onValueChange={(value) => form.setValue('role', value as 'user' | 'admin' | 'super_admin')}
+            placeholder="Selecione o papel"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user">Usuário</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="super_admin">Super Admin</SelectItem>
-            </SelectContent>
-          </Select>
+            <SmartSelectItem value="user">Usuário</SmartSelectItem>
+            <SmartSelectItem value="admin">Admin</SmartSelectItem>
+            <SmartSelectItem value="super_admin">Super Admin</SmartSelectItem>
+          </SmartSelect>
         </div>
       )}
 
