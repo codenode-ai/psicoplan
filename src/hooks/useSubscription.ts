@@ -21,6 +21,13 @@ export function useSubscription() {
   const checkSubscription = async () => {
     if (!user || !session) return;
     
+    // Verifica se a sessão é válida primeiro
+    const now = Date.now() / 1000;
+    if (session.expires_at && session.expires_at < now) {
+      console.log('Session expired, skipping subscription check');
+      return;
+    }
+    
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription', {
@@ -29,16 +36,26 @@ export function useSubscription() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Se erro for de autenticação, não mostra toast
+        if (error.message?.includes('Session') || error.message?.includes('Authentication')) {
+          console.log('Session invalid, skipping subscription check');
+          return;
+        }
+        throw error;
+      }
       
       setSubscription(data);
     } catch (error) {
       console.error('Error checking subscription:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao verificar status da assinatura",
-        variant: "destructive",
-      });
+      // Só mostra toast para erros que não sejam de sessão
+      if (!error.message?.includes('Session') && !error.message?.includes('Authentication')) {
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar status da assinatura",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

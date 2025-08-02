@@ -148,26 +148,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const cleanupAuthState = () => {
+    // Limpa todos os tokens de auth do localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Limpa sessionStorage se existir
+    if (typeof sessionStorage !== 'undefined') {
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+  };
+
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Limpa estado primeiro
+      cleanupAuthState();
+      
+      // Tenta fazer logout global
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        console.log('Global signout failed, continuing with local cleanup');
+      }
       
       setUser(null);
       setSession(null);
       setUserProfile(null);
       
-      toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso."
-      });
+      // Force page reload para garantir estado limpo
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Error signing out:', error);
+      // Mesmo com erro, limpa o estado local
+      cleanupAuthState();
+      setUser(null);
+      setSession(null);
+      setUserProfile(null);
+      
       toast({
         title: "Erro ao sair",
-        description: "Ocorreu um erro ao fazer logout.",
+        description: "Erro no logout, mas estado foi limpo.",
         variant: "destructive"
       });
+      
+      // Força redirect mesmo com erro
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
     }
   };
 
