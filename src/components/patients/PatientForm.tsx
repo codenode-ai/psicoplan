@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ export function PatientForm({ patient, onSuccess }: PatientFormProps) {
   const [newTag, setNewTag] = useState('');
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { isMobile } = useBreakpoint();
 
   const form = useForm<PatientFormData>({
     resolver: zodResolver(patientSchema),
@@ -113,13 +115,14 @@ export function PatientForm({ patient, onSuccess }: PatientFormProps) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <Label htmlFor="nome_completo">Nome Completo *</Label>
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <div className={isMobile ? 'col-span-1' : 'col-span-2'}>
+          <Label htmlFor="nome_completo" className="text-base">Nome Completo *</Label>
           <Input
             id="nome_completo"
             {...form.register('nome_completo')}
             placeholder="Nome completo do paciente"
+            className="min-h-[44px] text-base"
           />
           {form.formState.errors.nome_completo && (
             <p className="text-sm text-destructive mt-1">
@@ -129,39 +132,43 @@ export function PatientForm({ patient, onSuccess }: PatientFormProps) {
         </div>
 
         <div>
-          <Label htmlFor="cpf">CPF</Label>
+          <Label htmlFor="cpf" className="text-base">CPF</Label>
           <Input
             id="cpf"
             {...form.register('cpf')}
             placeholder="000.000.000-00"
+            className="min-h-[44px] text-base"
           />
         </div>
 
         <div>
-          <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+          <Label htmlFor="data_nascimento" className="text-base">Data de Nascimento</Label>
           <Input
             id="data_nascimento"
             type="date"
             {...form.register('data_nascimento')}
+            className="min-h-[44px] text-base"
           />
         </div>
 
         <div>
-          <Label htmlFor="telefone">Telefone</Label>
+          <Label htmlFor="telefone" className="text-base">Telefone</Label>
           <Input
             id="telefone"
             {...form.register('telefone')}
             placeholder="(00) 00000-0000"
+            className="min-h-[44px] text-base"
           />
         </div>
 
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-base">Email</Label>
           <Input
             id="email"
             type="email"
             {...form.register('email')}
             placeholder="email@exemplo.com"
+            className="min-h-[44px] text-base"
           />
           {form.formState.errors.email && (
             <p className="text-sm text-destructive mt-1">
@@ -172,15 +179,21 @@ export function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <Label>Tags</Label>
+        <Label className="text-base">Tags</Label>
         <div className="flex gap-2 mb-2">
           <Input
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             placeholder="Adicionar tag"
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+            className="min-h-[44px] text-base"
           />
-          <Button type="button" onClick={addTag} size="sm">
+          <Button 
+            type="button" 
+            onClick={addTag} 
+            size="sm"
+            className="min-h-[44px] min-w-[44px] px-3"
+          >
             <Plus className="w-4 h-4" />
           </Button>
         </div>
@@ -203,20 +216,30 @@ export function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <Label htmlFor="observacoes">Observações</Label>
+        <Label htmlFor="observacoes" className="text-base">Observações</Label>
         <Textarea
           id="observacoes"
           {...form.register('observacoes')}
           placeholder="Observações sobre o paciente..."
           rows={3}
+          className="min-h-[88px] text-base"
         />
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onSuccess}>
+      <div className={`flex gap-3 pt-4 ${isMobile ? 'flex-col' : 'justify-end'}`}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onSuccess}
+          className="min-h-[44px] touch-manipulation"
+        >
           Cancelar
         </Button>
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button 
+          type="submit" 
+          disabled={mutation.isPending}
+          className="min-h-[44px] touch-manipulation"
+        >
           {mutation.isPending 
             ? 'Salvando...' 
             : patient ? 'Atualizar' : 'Criar Paciente'

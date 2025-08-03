@@ -15,12 +15,12 @@ export function ResponsiveTable({ children, className }: ResponsiveTableProps) {
   return (
     <div className={cn("relative w-full", className)}>
       {isMobile ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {children}
         </div>
       ) : (
-        <div className="overflow-auto">
-          <Table>
+        <div className="overflow-x-auto -mx-3 px-3">
+          <Table className="min-w-full">
             {children}
           </Table>
         </div>
@@ -36,8 +36,8 @@ interface MobileCardProps {
 
 export function MobileCard({ children, className }: MobileCardProps) {
   return (
-    <Card className={cn("p-4", className)}>
-      <CardContent className="p-0 space-y-2">
+    <Card className={cn("p-4 shadow-soft hover:shadow-medium transition-smooth touch-manipulation", className)}>
+      <CardContent className="p-0 space-y-3">
         {children}
       </CardContent>
     </Card>

@@ -25,8 +25,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="lg:ml-80 min-h-screen">
-        <div className="p-4 pt-20 sm:p-6 sm:pt-16 lg:pt-6">
+      <main className="lg:ml-80 min-h-screen transition-smooth">
+        <div className="p-3 pt-[72px] sm:p-4 sm:pt-[72px] md:p-6 md:pt-6 lg:pt-6">
           {children}
         </div>
       </main>

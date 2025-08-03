@@ -61,7 +61,7 @@ export function Navigation() {
               key={item.href}
               to={item.href}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-smooth font-medium ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-smooth font-medium min-h-[44px] touch-manipulation ${
                 isActive
                   ? 'bg-primary/10 text-primary shadow-soft'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
@@ -88,7 +88,7 @@ export function Navigation() {
                     key={item.href}
                     to={item.href}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-smooth font-medium ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-smooth font-medium min-h-[44px] touch-manipulation ${
                       isActive
                         ? 'bg-primary/10 text-primary shadow-soft'
                         : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
@@ -119,7 +119,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             onClick={handleSignOut}
-            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground min-h-[44px] touch-manipulation px-4 py-3"
           >
             <LogOut className="w-4 h-4" />
             Sair
@@ -135,12 +135,19 @@ export function Navigation() {
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-60 h-12 w-12 p-0 touch-manipulation min-h-[44px] min-w-[44px]">
-              <Menu className="w-5 h-5" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="fixed top-3 left-3 z-50 h-12 w-12 p-0 touch-manipulation min-h-[44px] min-w-[44px] bg-background/80 backdrop-blur-sm border border-border shadow-soft hover:bg-background hover:shadow-medium transition-smooth"
+              aria-label="Abrir menu de navegação"
+            >
+              <Menu className="w-6 h-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-xs p-6">
-            <NavContent />
+          <SheetContent side="left" className="w-[90vw] max-w-sm p-0 overflow-hidden">
+            <div className="h-full overflow-y-auto p-6">
+              <NavContent />
+            </div>
           </SheetContent>
         </Sheet>
       </div>

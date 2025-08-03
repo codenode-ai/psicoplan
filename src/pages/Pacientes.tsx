@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ResponsiveTable, MobileCard } from '@/components/ui/responsive-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PatientForm } from '@/components/patients/PatientForm';
@@ -14,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Patient } from '@/types/database.types';
 import { toast } from '@/hooks/use-toast';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 
 export default function Pacientes() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,6 +23,7 @@ export default function Pacientes() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { userProfile } = useAuth();
   const queryClient = useQueryClient();
+  const { isMobile } = useBreakpoint();
 
   const { data: patients = [], isLoading } = useQuery({
     queryKey: ['patients'],
@@ -162,70 +165,129 @@ export default function Pacientes() {
                 {searchTerm ? 'Nenhum paciente encontrado.' : 'Nenhum paciente cadastrado.'}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Contato</TableHead>
-                    <TableHead>Tags</TableHead>
-                    <TableHead>Data de Nascimento</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPatients.map((patient) => (
-                    <TableRow key={patient.id}>
-                      <TableCell className="font-medium">
-                        {patient.nome_completo}
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {patient.telefone && (
-                            <div className="text-sm">{patient.telefone}</div>
-                          )}
-                          {patient.email && (
-                            <div className="text-sm text-muted-foreground">{patient.email}</div>
-                          )}
+              <ResponsiveTable>
+                {isMobile ? (
+                  <div className="space-y-3">
+                    {filteredPatients.map((patient) => (
+                      <MobileCard key={patient.id}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-medium text-base leading-tight">{patient.nome_completo}</h3>
+                            <div className="mt-2 space-y-1">
+                              {patient.telefone && (
+                                <p className="text-sm text-muted-foreground">{patient.telefone}</p>
+                              )}
+                              {patient.email && (
+                                <p className="text-sm text-muted-foreground">{patient.email}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 ml-3">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditPatient(patient)}
+                              className="min-h-[44px] min-w-[44px] p-2"
+                              aria-label="Editar paciente"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeletePatient(patient.id)}
+                              className="min-h-[44px] min-w-[44px] p-2"
+                              aria-label="Arquivar paciente"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </Button>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {patient.tags.map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              <Tag className="w-3 h-3 mr-1" />
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {patient.data_nascimento 
-                          ? new Date(patient.data_nascimento).toLocaleDateString('pt-BR')
-                          : '-'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditPatient(patient)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeletePatient(patient.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        {patient.tags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap mb-2">
+                            {patient.tags.map((tag, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                <Tag className="w-3 h-3 mr-1" />
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        {patient.data_nascimento && (
+                          <p className="text-sm text-muted-foreground">
+                            Nascimento: {new Date(patient.data_nascimento).toLocaleDateString('pt-BR')}
+                          </p>
+                        )}
+                      </MobileCard>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Contato</TableHead>
+                        <TableHead>Tags</TableHead>
+                        <TableHead>Data de Nascimento</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPatients.map((patient) => (
+                        <TableRow key={patient.id}>
+                          <TableCell className="font-medium">
+                            {patient.nome_completo}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {patient.telefone && (
+                                <div className="text-sm">{patient.telefone}</div>
+                              )}
+                              {patient.email && (
+                                <div className="text-sm text-muted-foreground">{patient.email}</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 flex-wrap">
+                              {patient.tags.map((tag, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  <Tag className="w-3 h-3 mr-1" />
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {patient.data_nascimento 
+                              ? new Date(patient.data_nascimento).toLocaleDateString('pt-BR')
+                              : '-'
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditPatient(patient)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeletePatient(patient.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </>
+                )}
+              </ResponsiveTable>
             )}
           </CardContent>
         </Card>
