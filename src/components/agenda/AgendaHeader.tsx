@@ -74,7 +74,7 @@ export function AgendaHeader({
                 {isMobile ? 'Nova' : 'Nova Sessão'}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto touch-manipulation">
               <DialogHeader>
                 <DialogTitle>
                   {selectedSession ? 'Editar Sessão' : 'Nova Sessão'}

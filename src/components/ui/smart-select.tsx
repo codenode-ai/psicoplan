@@ -17,52 +17,64 @@ interface SmartSelectItemProps {
   children: React.ReactNode;
 }
 
-// Hook melhorado para detectar mobile em dialog
+// Hook otimizado para detectar mobile em dialog
 function useIsMobileInDialog() {
   const [shouldUseNative, setShouldUseNative] = React.useState(false);
 
   React.useEffect(() => {
+    // Usar matchMedia para detecção mais precisa
+    const mobileQuery = window.matchMedia('(max-width: 768px) and (pointer: coarse)');
+    
     const checkMobileInDialog = () => {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                      (window.innerWidth <= 768 && 'ontouchstart' in window);
+      const isMobile = mobileQuery.matches || 
+                      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isInDialog = !!document.querySelector('[data-radix-dialog-content]');
       setShouldUseNative(isMobile && isInDialog);
     };
 
-    // Check imediatamente
+    // Check inicial
     checkMobileInDialog();
 
-    // Observer otimizado apenas para mudanças do dialog
+    // Listener para mudanças de media query
+    const handleMediaChange = () => {
+      checkMobileInDialog();
+    };
+
+    mobileQuery.addEventListener('change', handleMediaChange);
+
+    // Observer mais simples e otimizado
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheck = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkMobileInDialog, 100);
+    };
+
     const observer = new MutationObserver((mutations) => {
       const hasDialogChange = mutations.some(mutation => 
-        Array.from(mutation.addedNodes).some(node => 
-          node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
-        ) ||
-        Array.from(mutation.removedNodes).some(node => 
-          node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
+        mutation.type === 'childList' && (
+          Array.from(mutation.addedNodes).some(node => 
+            node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
+          ) ||
+          Array.from(mutation.removedNodes).some(node => 
+            node.nodeType === 1 && (node as Element).hasAttribute('data-radix-dialog-content')
+          )
         )
       );
       
       if (hasDialogChange) {
-        checkMobileInDialog();
+        debouncedCheck();
       }
     });
 
     observer.observe(document.body, { 
       childList: true, 
-      subtree: true,
-      attributes: false,
-      characterData: false
+      subtree: true
     });
 
-    // Listener para mudanças de orientação
-    window.addEventListener('orientationchange', checkMobileInDialog);
-    window.addEventListener('resize', checkMobileInDialog);
-
     return () => {
+      clearTimeout(timeoutId);
       observer.disconnect();
-      window.removeEventListener('orientationchange', checkMobileInDialog);
-      window.removeEventListener('resize', checkMobileInDialog);
+      mobileQuery.removeEventListener('change', handleMediaChange);
     };
   }, []);
 
@@ -96,21 +108,16 @@ export function SmartSelect({
       <select
         value={value || ''}
         onChange={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
           onValueChange(e.target.value);
         }}
-        onTouchStart={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
         disabled={disabled}
-        style={{ touchAction: 'manipulation' }}
         className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+          "flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
           "placeholder:text-muted-foreground",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          "touch-manipulation min-h-[44px]", // Área de toque mínima de 44px
+          "touch-manipulation min-h-[44px] appearance-none",
+          "cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground",
           className
         )}
       >
@@ -134,7 +141,7 @@ export function SmartSelect({
         position="popper" 
         side="bottom" 
         align="start"
-        className="z-[9999]"
+        className="z-[100] max-h-[300px] overflow-y-auto"
         container={document.querySelector('[data-radix-dialog-content]') || undefined}
       >
         {children}

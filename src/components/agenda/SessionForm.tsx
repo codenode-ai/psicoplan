@@ -97,9 +97,13 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['all-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['day-sessions'] });
+      // Debounce das invalidations
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['sessions'] });
+        queryClient.invalidateQueries({ queryKey: ['all-sessions'] });
+        queryClient.invalidateQueries({ queryKey: ['day-sessions'] });
+      }, 100);
+      
       toast({
         title: session ? "Sessão atualizada" : "Sessão agendada",
         description: session 
@@ -123,14 +127,15 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <Label htmlFor="paciente_id">Paciente *</Label>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 touch-manipulation">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="col-span-1 sm:col-span-2">
+          <Label htmlFor="paciente_id" className="text-base font-medium">Paciente *</Label>
           <SmartSelect 
             value={form.watch('paciente_id')} 
             onValueChange={(value) => form.setValue('paciente_id', value)}
             placeholder="Selecione um paciente"
+            className="mt-1"
           >
             {patients.map((patient) => (
               <SmartSelectItem key={patient.id} value={patient.id}>
@@ -146,10 +151,11 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
         </div>
 
         <div>
-          <Label htmlFor="data_hora">Data e Hora *</Label>
+          <Label htmlFor="data_hora" className="text-base font-medium">Data e Hora *</Label>
           <Input
             id="data_hora"
             type="datetime-local"
+            className="mt-1 h-12"
             {...form.register('data_hora')}
           />
           {form.formState.errors.data_hora && (
@@ -160,10 +166,11 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
         </div>
 
         <div>
-          <Label htmlFor="tipo">Tipo *</Label>
+          <Label htmlFor="tipo" className="text-base font-medium">Tipo *</Label>
           <SmartSelect 
             value={form.watch('tipo')} 
             onValueChange={(value) => form.setValue('tipo', value as 'presencial' | 'online')}
+            className="mt-1"
           >
             <SmartSelectItem value="presencial">Presencial</SmartSelectItem>
             <SmartSelectItem value="online">Online</SmartSelectItem>
@@ -171,10 +178,11 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
         </div>
 
         <div>
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status" className="text-base font-medium">Status</Label>
           <SmartSelect 
             value={form.watch('status')} 
             onValueChange={(value) => form.setValue('status', value as 'agendada' | 'realizada' | 'cancelada')}
+            className="mt-1"
           >
             <SmartSelectItem value="agendada">Agendada</SmartSelectItem>
             <SmartSelectItem value="realizada">Realizada</SmartSelectItem>
@@ -183,10 +191,11 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
         </div>
 
         {selectedTipo === 'online' && (
-          <div>
-            <Label htmlFor="link">Link da Sessão</Label>
+          <div className="col-span-1 sm:col-span-2">
+            <Label htmlFor="link" className="text-base font-medium">Link da Sessão</Label>
             <Input
               id="link"
+              className="mt-1 h-12"
               {...form.register('link')}
               placeholder="https://meet.google.com/..."
             />
@@ -195,20 +204,30 @@ export function SessionForm({ session, onSuccess, defaultDate }: SessionFormProp
       </div>
 
       <div>
-        <Label htmlFor="observacoes">Observações</Label>
+        <Label htmlFor="observacoes" className="text-base font-medium">Observações</Label>
         <Textarea
           id="observacoes"
+          className="mt-1 min-h-[80px]"
           {...form.register('observacoes')}
           placeholder="Observações sobre a sessão..."
           rows={3}
         />
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onSuccess}>
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onSuccess}
+          className="min-h-[44px] order-2 sm:order-1"
+        >
           Cancelar
         </Button>
-        <Button type="submit" disabled={mutation.isPending}>
+        <Button 
+          type="submit" 
+          disabled={mutation.isPending}
+          className="min-h-[44px] order-1 sm:order-2"
+        >
           {mutation.isPending 
             ? 'Salvando...' 
             : session ? 'Atualizar' : 'Agendar Sessão'
